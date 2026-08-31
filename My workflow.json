@@ -1,0 +1,1154 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            },
+            {}
+          ]
+        },
+        "filters": {
+          "q": "label:INBOX is: unread",
+          "readStatus": "unread"
+        }
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "e7affbac-8760-491f-be23-b62a489aeab5",
+      "name": "Gmail Trigger",
+      "alwaysOutputData": false,
+      "executeOnce": false,
+      "retryOnFail": false,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "S9IJR28pEqaFmPuL",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "\n\n",
+        "options": {
+          "systemMessage": "=Eres un asistente virtual de atención al cliente. Analiza el siguiente correo recibido:\n\n- De: {{ $json.From }}\n- Asunto: {{ $json.Subject }}\n- Mensaje del cliente: {{ $json.text || $json.snippet}} \n\nTu tarea es:\n1. Identificar la intención principal del cliente y el producto por el que consulta.\n2. Asignar un nivel de prioridad (Alta, Media o Baja).\n3. Generar una respuesta comercial borrador, amable y profesional.\n\nIMPORTANTE: Tu respuesta debe contener EXCLUSIVAMENTE el texto del correo electrónico listo para ser enviado al cliente. No agregues introducciones, análisis previos, saludos al operador ni explicaciones de tu razonamiento. Empieza directamente con el saludo al cliente (ej: \"Hola [Nombre],...\")."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "b9683016-e7f8-4285-957f-6f2ebb798c6b",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        96,
+        208
+      ],
+      "id": "0064152a-0655-4453-9068-08275d3dd3e2",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "NnYX40k6SKwT7vVT",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "airtableOAuth2Api",
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appbyM8TLYoJcXpKB",
+          "mode": "list",
+          "cachedResultName": "REGEN",
+          "cachedResultUrl": "https://airtable.com/appbyM8TLYoJcXpKB"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl7i4bA2rp30qBEG",
+          "mode": "list",
+          "cachedResultName": "LEADS",
+          "cachedResultUrl": "https://airtable.com/appbyM8TLYoJcXpKB/tbl7i4bA2rp30qBEG"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "NOMBRE": "={{ $('Gmail Trigger').item.json.From }}",
+            "Contacto": "=",
+            "Mensaje": "={{ $('Gmail Trigger').item.json.snippet }}",
+            "Prioridad": "Alta",
+            "Estado": "En proceso",
+            "Aprobado": false,
+            "Fuente del Lead": "Email",
+            "Respuesta IA": "={{ $json.output }}",
+            "Producto consultado": "=[\"{{ $('Gmail Trigger').item.json.Subject }}\"]"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "NOMBRE",
+              "displayName": "NOMBRE",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Contacto",
+              "displayName": "Contacto",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Producto consultado",
+              "displayName": "Producto consultado",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Mensaje",
+              "displayName": "Mensaje",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Prioridad",
+              "displayName": "Prioridad",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Alta",
+                  "value": "Alta"
+                },
+                {
+                  "name": "Media",
+                  "value": "Media"
+                },
+                {
+                  "name": "Baja",
+                  "value": "Baja"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Estado",
+              "displayName": "Estado",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Nuevo",
+                  "value": "Nuevo"
+                },
+                {
+                  "name": "En Proceso",
+                  "value": "En Proceso"
+                },
+                {
+                  "name": "Completado",
+                  "value": "Completado"
+                },
+                {
+                  "name": "Descartado",
+                  "value": "Descartado"
+                },
+                {
+                  "name": "En proceso",
+                  "value": "En proceso"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Respuesta IA",
+              "displayName": "Respuesta IA",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Aprobado",
+              "displayName": "Aprobado",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Fecha",
+              "displayName": "Fecha",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Error",
+              "displayName": "Error",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Fuente del Lead",
+              "displayName": "Fuente del Lead",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Web",
+                  "value": "Web"
+                },
+                {
+                  "name": "Redes Sociales",
+                  "value": "Redes Sociales"
+                },
+                {
+                  "name": "Email",
+                  "value": "Email"
+                },
+                {
+                  "name": "Teléfono",
+                  "value": "Teléfono"
+                },
+                {
+                  "name": "LinkedIn",
+                  "value": "LinkedIn"
+                },
+                {
+                  "name": "Instagram",
+                  "value": "Instagram"
+                },
+                {
+                  "name": "Facebook",
+                  "value": "Facebook"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Notas Internas",
+              "displayName": "Notas Internas",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Responsable",
+              "displayName": "Responsable",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        592,
+        0
+      ],
+      "id": "8f63e5a0-13b8-46d9-9de9-754fbbdca24f",
+      "name": "Create a record",
+      "credentials": {
+        "airtableOAuth2Api": {
+          "id": "LOkranDytczBbR8w",
+          "name": "Airtable account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "8512411836",
+        "text": "=⚠️ <b>NUEVA CONSULTA - PENDIENTE DE APROBACIÓN</b>\n\n👤 <b>Cliente: </b> {{ $('Gmail Trigger').item.json.snippet }}\n📧 <b>Asunto:</b> {{ $('Gmail Trigger').item.json.Subject }}\n\n🤖 <b>Respuesta Borrador de IA:</b>\n<i>{{ $('AI Agent').item.json.output }}</i>",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "✅ Aprobar",
+                    "additionalFields": {
+                      "callback_data": "approve",
+                      "url": "={{ $execution.resumeUrl }}&action=approve"
+                    }
+                  },
+                  {
+                    "text": "Rechazar",
+                    "additionalFields": {
+                      "callback_data": "reject",
+                      "url": "={{ $execution.resumeUrl}}&action=reject"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        800,
+        0
+      ],
+      "id": "7f32544c-2f45-4452-a6f0-9d8069872b5a",
+      "name": "Send a text message",
+      "webhookId": "ec6823ed-97dd-4d28-a056-2ff2e9143b38",
+      "credentials": {
+        "telegramApi": {
+          "id": "P8Uu909lIzOnJ2or",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resume": "webhook",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        992,
+        0
+      ],
+      "id": "2466edbc-9a8f-45c1-8e59-4c7b1b9f7d49",
+      "name": "Wait",
+      "webhookId": "36b05a48-fc72-4656-957b-927e970a9ab8"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.query.action }}",
+                    "rightValue": "approve",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "715b74ed-3a5a-4658-93ac-a0abc84acb48"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "333b6855-64fb-4e5c-aa67-d621976be3b7",
+                    "leftValue": "={{ $json.query.action }}",
+                    "rightValue": "approve",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEquals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "allMatchingOutputs": false
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        1216,
+        0
+      ],
+      "id": "51a9b1e0-e70b-482e-896e-db9c11650f95",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Gmail Trigger').item.json.From }}",
+        "subject": "={{ $('Gmail Trigger').item.json.Subject }}",
+        "emailType": "text",
+        "message": "={{ $('AI Agent').item.json.output.split('Respuesta comercial borrador')[1] || $('AI Agent').item.json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1440,
+        128
+      ],
+      "id": "77be7337-7b4c-4aa4-a73a-1802f320dda0",
+      "name": "Send a message",
+      "webhookId": "6908f3a8-b097-4b32-8b55-be95fa6846f7",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "S9IJR28pEqaFmPuL",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "airtableOAuth2Api",
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appbyM8TLYoJcXpKB",
+          "mode": "list",
+          "cachedResultName": "REGEN",
+          "cachedResultUrl": "https://airtable.com/appbyM8TLYoJcXpKB"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl7i4bA2rp30qBEG",
+          "mode": "list",
+          "cachedResultName": "LEADS",
+          "cachedResultUrl": "https://airtable.com/appbyM8TLYoJcXpKB/tbl7i4bA2rp30qBEG"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Aprobado": false,
+            "Estado": "Completado",
+            "Prioridad": "Alta",
+            "Mensaje": "={{ $('Create a record').item.json.fields.Mensaje }}",
+            "Producto consultado": "={{ $('Create a record').item.json.fields['Producto consultado']}}",
+            "NOMBRE": "={{ $('Create a record').item.json.fields.NOMBRE }}",
+            "Respuesta IA": "={{ $('AI Agent').item.json.output }}",
+            "id": "={{ $('Create a record').item.json.id }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "NOMBRE",
+              "displayName": "NOMBRE",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Contacto",
+              "displayName": "Contacto",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Producto consultado",
+              "displayName": "Producto consultado",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Mensaje",
+              "displayName": "Mensaje",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Prioridad",
+              "displayName": "Prioridad",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Alta",
+                  "value": "Alta"
+                },
+                {
+                  "name": "Media",
+                  "value": "Media"
+                },
+                {
+                  "name": "Baja",
+                  "value": "Baja"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Estado",
+              "displayName": "Estado",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Nuevo",
+                  "value": "Nuevo"
+                },
+                {
+                  "name": "En Proceso",
+                  "value": "En Proceso"
+                },
+                {
+                  "name": "Completado",
+                  "value": "Completado"
+                },
+                {
+                  "name": "Descartado",
+                  "value": "Descartado"
+                },
+                {
+                  "name": "En proceso",
+                  "value": "En proceso"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Respuesta IA",
+              "displayName": "Respuesta IA",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Aprobado",
+              "displayName": "Aprobado",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Fecha",
+              "displayName": "Fecha",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Error",
+              "displayName": "Error",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Fuente del Lead",
+              "displayName": "Fuente del Lead",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Web",
+                  "value": "Web"
+                },
+                {
+                  "name": "Redes Sociales",
+                  "value": "Redes Sociales"
+                },
+                {
+                  "name": "Email",
+                  "value": "Email"
+                },
+                {
+                  "name": "Teléfono",
+                  "value": "Teléfono"
+                },
+                {
+                  "name": "LinkedIn",
+                  "value": "LinkedIn"
+                },
+                {
+                  "name": "Instagram",
+                  "value": "Instagram"
+                },
+                {
+                  "name": "Facebook",
+                  "value": "Facebook"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Notas Internas",
+              "displayName": "Notas Internas",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Responsable",
+              "displayName": "Responsable",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        1664,
+        128
+      ],
+      "id": "2f50c6d4-efc5-472d-bf26-a507b16b4ee8",
+      "name": "Update record1 approve",
+      "credentials": {
+        "airtableOAuth2Api": {
+          "id": "W7VXtobdq2Uzmipt",
+          "name": "Airtable account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "airtableOAuth2Api",
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appbyM8TLYoJcXpKB",
+          "mode": "list",
+          "cachedResultName": "REGEN",
+          "cachedResultUrl": "https://airtable.com/appbyM8TLYoJcXpKB"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl7i4bA2rp30qBEG",
+          "mode": "list",
+          "cachedResultName": "LEADS",
+          "cachedResultUrl": "https://airtable.com/appbyM8TLYoJcXpKB/tbl7i4bA2rp30qBEG"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Aprobado": false,
+            "id": "={{ $('Create a record').item.json.id }}",
+            "NOMBRE": "={{ $('Create a record').item.json.fields.NOMBRE }}",
+            "Estado": "Descartado",
+            "Respuesta IA": "={{ $('AI Agent').item.json.output }}",
+            "Mensaje": "={{ $('Create a record').item.json.fields.Mensaje }}",
+            "Prioridad": "Alta",
+            "Producto consultado": "={{ $('Create a record').item.json.fields['Producto consultado']}}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "NOMBRE",
+              "displayName": "NOMBRE",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Contacto",
+              "displayName": "Contacto",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Producto consultado",
+              "displayName": "Producto consultado",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Mensaje",
+              "displayName": "Mensaje",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Prioridad",
+              "displayName": "Prioridad",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Alta",
+                  "value": "Alta"
+                },
+                {
+                  "name": "Media",
+                  "value": "Media"
+                },
+                {
+                  "name": "Baja",
+                  "value": "Baja"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Estado",
+              "displayName": "Estado",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Nuevo",
+                  "value": "Nuevo"
+                },
+                {
+                  "name": "En Proceso",
+                  "value": "En Proceso"
+                },
+                {
+                  "name": "Completado",
+                  "value": "Completado"
+                },
+                {
+                  "name": "Descartado",
+                  "value": "Descartado"
+                },
+                {
+                  "name": "En proceso",
+                  "value": "En proceso"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Respuesta IA",
+              "displayName": "Respuesta IA",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Aprobado",
+              "displayName": "Aprobado",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Fecha",
+              "displayName": "Fecha",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Error",
+              "displayName": "Error",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Fuente del Lead",
+              "displayName": "Fuente del Lead",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Web",
+                  "value": "Web"
+                },
+                {
+                  "name": "Redes Sociales",
+                  "value": "Redes Sociales"
+                },
+                {
+                  "name": "Email",
+                  "value": "Email"
+                },
+                {
+                  "name": "Teléfono",
+                  "value": "Teléfono"
+                },
+                {
+                  "name": "LinkedIn",
+                  "value": "LinkedIn"
+                },
+                {
+                  "name": "Instagram",
+                  "value": "Instagram"
+                },
+                {
+                  "name": "Facebook",
+                  "value": "Facebook"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Notas Internas",
+              "displayName": "Notas Internas",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Responsable",
+              "displayName": "Responsable",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        1440,
+        -176
+      ],
+      "id": "307aaf28-8670-417e-9323-38f2dae109b7",
+      "name": "Update record reject",
+      "credentials": {
+        "airtableOAuth2Api": {
+          "id": "W7VXtobdq2Uzmipt",
+          "name": "Airtable account 3"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Create a record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a record": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update record reject",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Update record1 approve",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "d3ac1948-b1ac-4521-950d-ab99b069e096",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b4868e9db1fe552f61b04b87e04c8a6fe49c1133b9492fd1e189830b2fc15b18"
+  },
+  "nodeGroups": [],
+  "id": "SprUphmFwgGfCTT6",
+  "tags": []
+}
