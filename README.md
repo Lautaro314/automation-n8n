@@ -36,4 +36,4 @@ El sistema implementa un patrón **Human-in-the-Loop (HITL)** usando un nodo `Wa
 
 * **Base de Datos (Airtable en modo lectura):** https://airtable.com/appbyM8TLYoJcXpKB/shruPjBdGZgK40IUO
 * **Dashboard de Control (Shared View):** https://airtable.com/appbyM8TLYoJcXpKB/shri6OnJ3tPqnwaOr
-* **Video Demo (3 min):** [INSERTAR_LINK_LUMBO_YOUTUBE]
+* **Video Demo (3 min):** https://www.loom.com/share/4c64f3468f80448495fe3d3ecab07f4b
